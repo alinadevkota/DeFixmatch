@@ -10,6 +10,7 @@ from train_utils import AverageMeter
 
 from .fixmatch_utils import consistency_loss, Get_Scalar
 from train_utils import ce_loss
+from tqdm.contrib import tzip
 
 
 
@@ -112,7 +113,7 @@ class FixMatch:
         amp_cm = autocast if args.amp else contextlib.suppress #update for python3.6
         #amp_cm = autocast if args.amp else contextlib.nullcontext #original version
 
-        for (x_lb, x_lb_s, y_lb), (x_ulb_w, x_ulb_s, _) in zip(self.loader_dict['train_lb'], self.loader_dict['train_ulb']):
+        for (x_lb, x_lb_s, y_lb), (x_ulb_w, x_ulb_s, _) in tzip(self.loader_dict['train_lb'], self.loader_dict['train_ulb']):
             
             # prevent the training iterations exceed args.num_train_iter
             if self.it > args.num_train_iter + args.num_iteration_finetuning:

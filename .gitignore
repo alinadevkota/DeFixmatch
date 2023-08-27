@@ -1,0 +1,10 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# data directory
+data/
+
+# models and tensorboard logs
+saved_models/

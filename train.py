@@ -18,7 +18,7 @@ from models.fixmatch.fixmatch import FixMatch
 from datasets.ssl_dataset import SSL_Dataset
 from datasets.data_utils import get_data_loader
 
-port_dict = {0:{1:8080, 2:8081, 3:8082, 4:8083, 5:8084}, 
+port_dict = {0:{1:8090, 2:8091, 3:8092, 4:8093, 5:8094}, 
             1:{1:8085, 2:8086, 3:8087, 4:8088, 5:8090}, 
             2:{1:8091, 2:8100, 3:8123, 4:8124, 5:8125}, 
             3:{1:8126, 2:8130, 3:8172, 4:8181, 5:8182}, 
