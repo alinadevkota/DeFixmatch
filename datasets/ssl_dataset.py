@@ -10,13 +10,17 @@ from .dataset import BasicDataset
 
 import torchvision
 from torchvision import datasets, transforms
+import medmnist
+from medmnist import INFO
 
 mean, std = {}, {}
 mean['cifar10'] = [x / 255 for x in [125.3, 123.0, 113.9]]
 mean['cifar100'] = [x / 255 for x in [129.3, 124.1, 112.4]]
+mean['medmnist'] = mean['cifar10']
 
 std['cifar10'] = [x / 255 for x in [63.0, 62.1, 66.7]]
 std['cifar100'] = [x / 255 for x in [68.2,  65.4,  70.4]]
+std['medmnist'] = std['cifar10']
 
 
 def get_transform(mean, std, train=True):
@@ -59,9 +63,31 @@ class SSL_Dataset:
         """
         get_data returns data (images) and targets (labels)
         """
-        dset = getattr(torchvision.datasets, self.name.upper())
-        dset = dset(self.data_dir, train=self.train, download=True)
-        data, targets = dset.data, dset.targets
+        # error here for medmnist
+        if self.name == "medmnist":
+            data_flag = 'bloodmnist'
+            info = INFO[data_flag]
+            DataClass = getattr(medmnist, info['python_class'])
+            if self.train:
+                split = "train"
+            else:
+                split = "test"
+
+            data_transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Pad(12, padding_mode="edge")
+            ])
+            dset = DataClass(split=split, download=True, root="./data", transform=data_transform)
+            data, targets = dset.imgs, dset.labels
+            targets = [x[0] for x in targets]
+            pad_val = 2
+            data = np.pad(data, ((0, 0), (pad_val, pad_val), (pad_val, pad_val), (0, 0)),
+                  mode='constant', constant_values=0)
+        else:
+            dset = getattr(torchvision.datasets, self.name.upper())
+            dset = dset(self.data_dir, train=self.train, download=True)
+            data, targets = dset.data, dset.targets
+        
         return data, targets
     
     
