@@ -78,9 +78,11 @@ class BasicDataset(Dataset):
             if not self.use_strong_transform:
                 return img_w, target
             else:
-                # print(img, img.size, img.mode)
+                # print(img, img.size, img.mode, self.strong_transform)
                 # exit()
-                return img_w, self.strong_transform(img.convert("RGB")), target
+                transform2 = transforms.Compose([transforms.PILToTensor()])
+                transform = transforms.Compose([RandAugment(3,5)])
+                return img_w, transform2(transform(img.convert("RGB")).convert("F")), target
 
     
     def __len__(self):
