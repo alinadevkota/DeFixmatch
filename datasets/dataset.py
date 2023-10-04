@@ -78,7 +78,9 @@ class BasicDataset(Dataset):
             if not self.use_strong_transform:
                 return img_w, target
             else:
-                return img_w, self.strong_transform(img), target
+                print(img, img.size, img.mode)
+                # exit()
+                return img_w, self.strong_transform(img.convert("RGB")), target
 
     
     def __len__(self):

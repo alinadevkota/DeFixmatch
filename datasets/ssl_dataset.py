@@ -33,6 +33,9 @@ def get_transform(mean, std, train=True):
         return transforms.Compose([transforms.ToTensor(), 
                                      transforms.Normalize(mean, std)])
 
+def torch_loader(file_path):
+    return torch.load(file_path)
+
     
 class SSL_Dataset:
     """
@@ -57,7 +60,8 @@ class SSL_Dataset:
         self.train = train
         self.data_dir = data_dir
         self.num_classes = num_classes
-        self.transform = get_transform(mean[name], std[name], train)
+        # self.transform = get_transform(mean[name], std[name], train)
+        self.transform = transforms.Compose([transforms.ToTensor()])
         
     def get_data(self):
         """
@@ -83,6 +87,21 @@ class SSL_Dataset:
             pad_val = 2
             data = np.pad(data, ((0, 0), (pad_val, pad_val), (pad_val, pad_val), (0, 0)),
                   mode='constant', constant_values=0)
+        elif self.name == "idrid":
+            t = transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                ]
+            )
+            if self.train:
+                split = "train"
+            else:
+                split = "test"
+
+            dataset =  datasets.ImageFolder(root=f"./data/idrid_embed1/{split}", loader=torch_loader)
+            data = [x[0].detach().numpy() for x in dataset]
+            targets = [x[1] for x in dataset]
+
         else:
             dset = getattr(torchvision.datasets, self.name.upper())
             dset = dset(self.data_dir, train=self.train, download=True)

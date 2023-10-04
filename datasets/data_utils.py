@@ -46,6 +46,7 @@ def sample_labeled_data(data, target,
     lb_idx = []
     for c in range(num_classes):
         idx = np.where(target == c)[0]
+        samples_per_class = int(len(idx) * 0.5)
         idx = np.random.choice(idx, samples_per_class, False)
         lb_idx.extend(idx)
         

@@ -33,17 +33,21 @@ def net_builder(net_name, from_name: bool, net_conf=None):
         net_conf: When from_name is False, net_conf is the configuration of backbone network (now, only WRN is supported).
     """
     if from_name:
-        import torchvision.models as models
-        model_name_list = sorted(name for name in models.__dict__
-                                if name.islower() and not name.startswith("__")
-                                and callable(models.__dict__[name]))
-
-        if net_name not in model_name_list:
-            assert Exception(f"[!] Networks\' Name is wrong, check net config, \
-                               expected: {model_name_list}  \
-                               received: {net_name}")
+        if net_name == "simple_nn":
+            from models.nets.simple_nn import NeuralNetwork
+            return NeuralNetwork
         else:
-            return models.__dict__[net_name]
+            import torchvision.models as models
+            model_name_list = sorted(name for name in models.__dict__
+                                    if name.islower() and not name.startswith("__")
+                                    and callable(models.__dict__[name]))
+
+            if net_name not in model_name_list:
+                assert Exception(f"[!] Networks\' Name is wrong, check net config, \
+                                expected: {model_name_list}  \
+                                received: {net_name}")
+            else:
+                return models.__dict__[net_name]
         
     else:
         if net_name == 'WideResNet':
