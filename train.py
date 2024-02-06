@@ -282,7 +282,7 @@ if __name__ == "__main__":
                         help='total number of training iterations')
     parser.add_argument('--num_iteration_finetuning', type=int, default=0, 
                         help='total number of finetuning iterations using DeFixmatch')
-    parser.add_argument('--num_eval_iter', type=int, default=10000,
+    parser.add_argument('--num_eval_iter', type=int, default=1000,
                         help='evaluation frequency')
     parser.add_argument('--num_labels', type=int, default=4000)
     parser.add_argument('--batch_size', type=int, default=64,
