@@ -329,7 +329,7 @@ if __name__ == "__main__":
         help="total number of finetuning iterations using DeFixmatch",
     )
     parser.add_argument(
-        "--num_eval_iter", type=int, default=1000, help="evaluation frequency"
+        "--num_eval_iter", type=int, default=50, help="evaluation frequency"
     )
     parser.add_argument("--num_labels", type=int, default=4000)
     parser.add_argument(

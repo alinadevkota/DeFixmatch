@@ -14,10 +14,12 @@ class ImageFolderWithPaths(datasets.ImageFolder):
         return (img, label, path)
 
 
-def build_dataset(data_path, is_train, is_test):
-    if is_train is True:
+def build_dataset(data_path, is_train, is_test, is_unlabelled=False):
+    if is_unlabelled:
+        split_set = "train_unlabelled"
+    elif is_train:
         split_set = "train"
-    elif is_test is True:
+    elif is_test:
         split_set = "test"
     else:
         split_set = "val"

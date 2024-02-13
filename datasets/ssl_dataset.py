@@ -137,7 +137,9 @@ class SSL_Dataset:
 
         if self.name == "APTOS2019":
             lb_data, lb_targets = data, targets
-            dset = build_dataset(self.data_dir, self.train, self.test)
+            dset = build_dataset(
+                self.data_dir, self.train, self.test, is_unlabelled=True
+            )
             ulb_data = [x[0] for x in dset]
             ulb_targets = [x[1] for x in dset]
         else:
