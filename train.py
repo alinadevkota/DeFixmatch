@@ -27,6 +27,8 @@ port_dict = {
     4: {1: 8190, 2: 8199, 3: 8257, 4: 8258, 5: 8284},
 }
 
+from utility.retfound_utils import param_groups_lrd
+
 
 def change_dist_url(args):
     localhost = "tcp://127.0.0.1:"
@@ -197,6 +199,15 @@ def main_worker(gpu, ngpus_per_node, args):
     # set SGD and cosine lr on FixMatch
     model.set_optimizer(optimizer, scheduler)
 
+    # build optimizer with layer-wise lr decay (lrd)
+    param_groups = param_groups_lrd(model, args.weight_decay,
+        no_weight_decay_list=model.no_weight_decay(),
+        layer_decay=args.layer_decay
+    )
+    optimizer = torch.optim.AdamW(param_groups, lr=args.lr)
+    loss_scaler = NativeScaler()
+    criterion = LabelSmoothingCrossEntropy(smoothing=0.1)
+
     # SET Devices for (Distributed) DataParallel
     if not torch.cuda.is_available():
         raise Exception("ONLY GPU TRAINING IS SUPPORTED")
@@ -335,7 +346,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=64,
+        default=4,
         help="total number of batch size of labeled data",
     )
     parser.add_argument(
@@ -366,7 +377,7 @@ if __name__ == "__main__":
     """
     Optimizer configurations
     """
-    parser.add_argument("--lr", type=float, default=0.03)
+    parser.add_argument("--lr", type=float, default=0.0003125)
     parser.add_argument("--momentum", type=float, default=0.9)
     parser.add_argument("--weight_decay", type=float, default=5e-4)
     parser.add_argument(

@@ -71,13 +71,13 @@ class FixMatch:
                 global_pool=True,
             )
             checkpoint = torch.load(
-                "/users/ad00139/RETFound_MAE/RETFound_cfp_weights.pth",
+                "/home/alina/RETFound_cfp_weights.pth",
                 map_location="cpu",
             )
 
             print(
                 "Load pre-trained checkpoint from: %s"
-                % "/users/ad00139/RETFound_MAE/RETFound_cfp_weights.pth"
+                % "/home/alina/RETFound_cfp_weights.pth"
             )
             checkpoint_model = checkpoint["model"]
             state_dict = train_model.state_dict()
