@@ -28,13 +28,13 @@ def accuracy(output, target, topk=(1, 5)):
         return res
 
 
-def accuracy_per_class(output, target):
+def accuracy_per_class(output, target, num_classes):
     """Computes the accuracy over the k top predictions for the specified values of k"""
     with torch.no_grad():
         res = [
             output.cpu().max(1)[1].eq(target)[target == i].sum().numpy()
             / len(target[target == i])
-            for i in range(10)
+            for i in range(num_classes)
         ]
 
         return res
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--data_dir", type=str, default="./data")
     parser.add_argument("--dataset", type=str, default="cifar10")
-    parser.add_argument("--num_classes", type=int, default=10)
+    parser.add_argument("--num_classes", type=int, default=5)
     args = parser.parse_args()
 
     checkpoint_path = os.path.join(args.load_path)
@@ -123,14 +123,29 @@ if __name__ == "__main__":
         },
     )
 
-    net = _net_builder(num_classes=args.num_classes)
-    net.load_state_dict(load_model)
+    load_retfound = True if args.net == "RetFound" else False
+
+    if load_retfound:
+        model = _net_builder(
+            img_size=224,
+            num_classes=args.num_classes,
+            global_pool=True,
+        )
+        # model.to(device)
+
+        net = model
+        checkpoint = torch.load("saved_models/50_ModAPTOS2019_4000_0.0_0/model_best.pth", map_location='cpu')
+        net.load_state_dict(checkpoint['eval_model'])
+    else:
+        net = _net_builder(num_classes=args.num_classes)
+        net.load_state_dict(load_model)
+
     if torch.cuda.is_available():
         net.cuda()
     net.eval()
 
     _eval_dset = SSL_Dataset(
-        name=args.dataset, train=False, data_dir=args.data_dir, test=True
+        name=args.dataset, train=False, num_classes=args.num_classes, data_dir=args.data_dir, test=True
     )
     eval_dset = _eval_dset.get_dset()
 
@@ -155,7 +170,7 @@ if __name__ == "__main__":
 
         ece = compute_expected_calibration_error(logits, labels).cpu().item()
         top5_acc = accuracy(logits, labels, topk=(1, 5))[1].detach().item()
-        acc_per_class = accuracy_per_class(logits, labels)
+        acc_per_class = accuracy_per_class(logits, labels, num_classes=args.num_classes)
     print(
         f"Test Accuracy: {acc/len(eval_dset)} \tLoss: {loss/len(eval_dset)} \tECE: {ece} \tTop5 Accuracy {top5_acc} \tACC/class: {acc_per_class}"  # noqa: E501
     )
