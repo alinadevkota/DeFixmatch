@@ -188,9 +188,18 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # SET Optimizer & LR Scheduler
     # construct SGD and cosine lr scheduler
-    optimizer = get_SGD(
-        model.train_model, "SGD", args.lr, args.momentum, args.weight_decay
-    )
+    if load_retfound:
+        param_groups = param_groups_lrd(model.train_model, args.weight_decay,
+            no_weight_decay_list=model.train_model.no_weight_decay(),
+            layer_decay=0.75
+        )
+        # optimizer = torch.optim.AdamW(param_groups, lr=args.lr, weight_decay=args.weight_decay)
+        optimizer = torch.optim.SGD(param_groups, lr=args.lr, weight_decay=args.weight_decay, momentum=args.momentum, nesterov=True)
+
+    else:
+        optimizer = get_SGD(
+            model.train_model, "SGD", args.lr, args.momentum, args.weight_decay
+        )
     scheduler = get_cosine_schedule_with_warmup(
         optimizer,
         args.num_train_iter + args.num_iteration_finetuning,
@@ -200,13 +209,8 @@ def main_worker(gpu, ngpus_per_node, args):
     model.set_optimizer(optimizer, scheduler)
 
     # build optimizer with layer-wise lr decay (lrd)
-    param_groups = param_groups_lrd(model, args.weight_decay,
-        no_weight_decay_list=model.no_weight_decay(),
-        layer_decay=args.layer_decay
-    )
-    optimizer = torch.optim.AdamW(param_groups, lr=args.lr)
-    loss_scaler = NativeScaler()
-    criterion = LabelSmoothingCrossEntropy(smoothing=0.1)
+    # loss_scaler = NativeScaler()
+    # criterion = LabelSmoothingCrossEntropy(smoothing=0.1)
 
     # SET Devices for (Distributed) DataParallel
     if not torch.cuda.is_available():
@@ -346,7 +350,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=4,
+        default=2,
         help="total number of batch size of labeled data",
     )
     parser.add_argument(
