@@ -44,7 +44,13 @@ class SSL_Dataset:
     """
 
     def __init__(
-        self, name="cifar10", train=True, num_classes=10, data_dir="./data", test=False
+        self,
+        name="cifar10",
+        train=True,
+        num_classes=10,
+        data_dir="./data",
+        test=False,
+        aptos_load_unlabelled=True,
     ):
         """
         Args
@@ -59,6 +65,7 @@ class SSL_Dataset:
         self.test = test
         self.data_dir = data_dir
         self.num_classes = num_classes
+        self.aptos_load_unlabelled = aptos_load_unlabelled
         if self.name == "APTOS2019":
             self.transform = build_transform(self.train)
         else:
@@ -137,8 +144,12 @@ class SSL_Dataset:
 
         if self.name == "APTOS2019":
             lb_data, lb_targets = data, targets
+            # is_unlabelled = False if self.aptos_load_unlabelled else True
             dset = build_dataset(
-                self.data_dir, self.train, self.test, is_unlabelled=True
+                self.data_dir,
+                self.train,
+                self.test,
+                is_unlabelled=self.aptos_load_unlabelled,
             )
             ulb_data = [x[0] for x in dset]
             ulb_targets = [x[1] for x in dset]

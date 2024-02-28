@@ -134,8 +134,8 @@ if __name__ == "__main__":
         # model.to(device)
 
         net = model
-        checkpoint = torch.load("saved_models/50_ModAPTOS2019_4000_0.0_0/model_best.pth", map_location='cpu')
-        net.load_state_dict(checkpoint['eval_model'])
+        checkpoint = torch.load(checkpoint_path, map_location="cpu")
+        net.load_state_dict(checkpoint["eval_model"])
     else:
         net = _net_builder(num_classes=args.num_classes)
         net.load_state_dict(load_model)
@@ -145,7 +145,11 @@ if __name__ == "__main__":
     net.eval()
 
     _eval_dset = SSL_Dataset(
-        name=args.dataset, train=False, num_classes=args.num_classes, data_dir=args.data_dir, test=True
+        name=args.dataset,
+        train=False,
+        num_classes=args.num_classes,
+        data_dir=args.data_dir,
+        test=True,
     )
     eval_dset = _eval_dset.get_dset()
 

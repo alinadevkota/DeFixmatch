@@ -35,6 +35,7 @@ class FixMatch:
         tb_log=None,
         logger=None,
         load_retfound=False,
+        retfound_path=None,
     ):
         """
         class Fixmatch contains setter of data_loader, optimizer, and model update methods.
@@ -71,14 +72,11 @@ class FixMatch:
                 global_pool=True,
             )
             checkpoint = torch.load(
-                "/home/alina/RETFound_cfp_weights.pth",
+                retfound_path,
                 map_location="cpu",
             )
 
-            print(
-                "Load pre-trained checkpoint from: %s"
-                % "/home/alina/RETFound_cfp_weights.pth"
-            )
+            print("Load pre-trained checkpoint from: %s" % retfound_path)
             checkpoint_model = checkpoint["model"]
             state_dict = train_model.state_dict()
             for k in ["head.weight", "head.bias"]:

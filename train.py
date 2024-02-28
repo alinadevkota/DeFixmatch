@@ -99,6 +99,7 @@ def main(args):
     # distributed: true if manually selected or if world_size > 1
     args.distributed = args.world_size > 1 or args.multiprocessing_distributed
     ngpus_per_node = torch.cuda.device_count()  # number of gpus of each node
+    print(ngpus_per_node)
 
     # divide the batch_size according to the number of nodes
     args.batch_size = int(args.batch_size / args.world_size)
@@ -127,6 +128,8 @@ def main_worker(gpu, ngpus_per_node, args):
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     cudnn.deterministic = False
+
+    aptos_load_unlabelled = False if args.data_dir.endswith("100percent") else True
 
     # SET UP FOR DISTRIBUTED TRAINING
     if args.distributed:
@@ -182,6 +185,7 @@ def main_worker(gpu, ngpus_per_node, args):
         tb_log=tb_log,
         logger=logger,
         load_retfound=load_retfound,
+        retfound_path=args.retfound_dir,
     )
 
     logger.info(f"Number of Trainable Params: {count_parameters(model.train_model)}")
@@ -189,12 +193,20 @@ def main_worker(gpu, ngpus_per_node, args):
     # SET Optimizer & LR Scheduler
     # construct SGD and cosine lr scheduler
     if load_retfound:
-        param_groups = param_groups_lrd(model.train_model, args.weight_decay,
+        param_groups = param_groups_lrd(
+            model.train_model,
+            args.weight_decay,
             no_weight_decay_list=model.train_model.no_weight_decay(),
-            layer_decay=0.75
+            layer_decay=0.75,
         )
         # optimizer = torch.optim.AdamW(param_groups, lr=args.lr, weight_decay=args.weight_decay)
-        optimizer = torch.optim.SGD(param_groups, lr=args.lr, weight_decay=args.weight_decay, momentum=args.momentum, nesterov=True)
+        optimizer = torch.optim.SGD(
+            param_groups,
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+            momentum=args.momentum,
+            nesterov=True,
+        )
 
     else:
         optimizer = get_SGD(
@@ -256,6 +268,7 @@ def main_worker(gpu, ngpus_per_node, args):
         train=True,
         num_classes=args.num_classes,
         data_dir=args.data_dir,
+        aptos_load_unlabelled=aptos_load_unlabelled,
     )
     lb_dset, ulb_dset = train_dset.get_ssl_dset(args.num_labels)
 
@@ -264,6 +277,7 @@ def main_worker(gpu, ngpus_per_node, args):
         train=False,
         num_classes=args.num_classes,
         data_dir=args.data_dir,
+        aptos_load_unlabelled=aptos_load_unlabelled,
     )
     eval_dset = _eval_dset.get_dset()
 
@@ -403,6 +417,9 @@ if __name__ == "__main__":
     """
 
     parser.add_argument("--data_dir", type=str, default="./data")
+    parser.add_argument(
+        "--retfound_dir", type=str, default="./RETFound_cfp_weights.pth"
+    )
     parser.add_argument("--dataset", type=str, default="cifar10")
     parser.add_argument("--train_sampler", type=str, default="RandomSampler")
     parser.add_argument("--num_classes", type=int, default=10)

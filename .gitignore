@@ -133,7 +133,8 @@ dmypy.json
 
 resources/
 data/
-saved_models/
+saved_models*/
+slurm-*
 
 
 .ipynb_checkpoints
